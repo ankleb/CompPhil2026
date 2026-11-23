@@ -48,7 +48,21 @@ label {
     min-width: 60ch;
     min-height: 30ch;
     max-width: 80ch;
+    /* a long text scrolls inside its box instead of making the box
+       taller than the page and pushing the other box out of view */
+    max-height: 70vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
     border: 1px dashed black;
+}
+.textcolumn {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.filelabel {
+    font-size: 1rem;
+    padding: 0;
 }
 
 input[type="text"] {
@@ -137,6 +151,7 @@ input[name="language"]:not(:checked) ~ details {
         <h1>Fuzzy matching with ngrams</h1>
         <section>
             <p>Use this tool to experiment with fuzzy matching, using different tokenization strategies. The input can be in IAST/Madras Lexicon transliteration or in Bengali, Burmese, Devanagari, Grantha, Malayalam, Newa, Sarada, Sinhalese, Tamil, Telugu, Tibetan, or Ge'ez script. Some options will additionally work for other scripts.</p>
+            <p>To compare two long texts — whole works, verse by verse or sūtra by sūtra — and get a table of the parallels, use <a href="parallels.html">Finding parallels</a>.</p>
             <details id="samples">
               <summary>Sample texts</summary>
               <div class="samplebox">
@@ -195,9 +210,15 @@ kiñ cāpi kho mhi dukkhitā dubbalā gatayobbanā | daṇḍam olubbha gacchām
             </details>
         </section>
         <section style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: fit-content; gap: 2rem">
-          <div style="flex-grow: 1; display: flex; flex-direction:row; align-items: center; gap: 1rem">
-            <div id="textinput1" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
-            <div id="textinput2" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
+          <div style="flex-grow: 1; display: flex; flex-direction:row; align-items: flex-start; gap: 1rem">
+            <div class="textcolumn">
+              <label class="filelabel">Load a text file: <input type="file" class="fileinput" data-target="textinput1" accept=".txt,.xml,text/plain"/></label>
+              <div id="textinput1" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
+            </div>
+            <div class="textcolumn">
+              <label class="filelabel">Load a text file: <input type="file" class="fileinput" data-target="textinput2" accept=".txt,.xml,text/plain"/></label>
+              <div id="textinput2" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
+            </div>
           </div>
           <button id="comparesubmit" style="font-size: 1.2rem; padding: 0.5rem; width: fit-content">Compare</button>
           <fieldset class="options" style="flex-grow: 0; width: max-content">

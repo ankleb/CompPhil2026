@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Finding parallels</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<link rel="stylesheet" href="https://tst-project.github.io/lib/css/tufte.css" />
+<link rel="stylesheet" href="https://tst-project.github.io/lib/css/fonts.css" />
+<link rel="stylesheet" href="https://tst-project.github.io/lib/css/tst.css" />
+<style type="text/css">
+body {
+    display: inherit;
+    padding: 0 2rem;
+    margin: auto;
+    width: unset;
+    height: unset;
+    max-width: 110rem;
+}
+article > section { width: 100%; }
+h1 { margin-bottom: 0.5rem; }
+label { font-size: 1.1rem; padding: 0.3rem; }
+.intro { max-width: 70rem; font-size: 1.1rem; }
+
+.texts {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.textcolumn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.textcolumn .name { font-size: 1.1rem; font-weight: bold; }
+.inputbox {
+    position: relative;
+    font-size: 1.1rem;
+    height: 42vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px dashed black;
+    padding: 0.3rem;
+}
+
+/* matches in the texts */
+.m1 { background: #ffe14d; cursor: pointer; }
+.mr { background: #ffc38a; cursor: pointer; }
+.mp { background: #cfe0f5; cursor: pointer; }
+.mu { background: #e3e3e3; }
+.flash { outline: 3px solid #c0392b; background: #ff8f80 !important; }
+.legend span { padding: 0 0.3rem; margin-right: 0.8rem; }
+
+/* settings */
+.settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+}
+.settings > div { display: flex; flex-direction: column; gap: 0.2rem; }
+.settings h3 { margin: 0.3rem 0; font-size: 1.2rem; }
+.settings input[type="number"] { width: 4.5rem; }
+.settings input[type="text"] { width: 26rem; font-family: monospace; font-size: 0.95rem; }
+.settings .hint { font-size: 0.9rem; color: #555; max-width: 28rem; }
+.row { display: flex; align-items: center; gap: 0.4rem; }
+.row > label:first-child { min-width: 13rem; }
+.only-passages, .only-units { display: flex; flex-direction: column; gap: 0.2rem; }
+body.units .only-passages, body.passages .only-units { display: none; }
+p.hint.only-passages, p.hint.only-units { display: block; margin: 0 0 0.4rem; }
+body.units p.hint.only-passages, body.passages p.hint.only-units { display: none; }
+
+details { margin-bottom: 0.5rem; }
+details > :not(summary) { margin-left: 1rem; }
+summary { font-size: 1.2rem; }
+.horizontal { display: flex; flex-direction: row; align-items: flex-start; }
+.horizontal > label { width: 5rem; }
+details details > div { width: 15rem; }
+input[name="language"] { margin-top: 0.6rem; }
+input[name="language"] ~ details { margin-top: 0.3rem; }
+input[name="language"] ~ details summary { height: 0; }
+input[name="language"]:not(:checked) ~ details { display: none; }
+
+.runrow { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0.8rem 0 0.4rem; }
+.runrow select { font-size: 1.05rem; }
+#run { font-size: 1.3rem; padding: 0.4rem 1.2rem; }
+#settingsbox > summary { font-size: 1.05rem; color: #333; }
+#status { font-size: 1.1rem; margin-left: 1rem; }
+
+/* results */
+.tabs { display: flex; gap: 0.3rem; margin-top: 1rem; flex-wrap: wrap; }
+.tabs button { font-size: 1.05rem; padding: 0.3rem 0.8rem; border: 1px solid #888; background: #f4f4f4; cursor: pointer; }
+.tabs button.active { background: #333; color: white; }
+.tablewrap { max-height: 38vh; overflow: auto; border: 1px solid #aaa; }
+table.results { border-collapse: collapse; width: 100%; font-size: 1rem; }
+table.results th { position: sticky; top: 0; background: #eee; cursor: pointer; text-align: left; padding: 0.3rem; user-select: none; }
+table.results td { border-top: 1px solid #ddd; padding: 0.25rem 0.4rem; vertical-align: top; }
+table.results tr:hover td { background: #fff7cc; cursor: pointer; }
+table.results tr.selected td { background: #ffe14d; }
+td.num { text-align: right; white-space: nowrap; }
+td.ref { white-space: nowrap; }
+td.text { max-width: 40rem; }
+.note { font-size: 0.95rem; color: #555; margin: 0.3rem 0; }
+</style>
+</head>
+
+<body lang="en" class="passages">
+<article>
+  <h1>Finding parallels</h1>
+  <p class="intro">Compare two texts, find the passages they share, and sort them into
+    <span class="m1">one-to-one</span> parallels (found once in each text),
+    <span class="mr">repeated</span> matches (one place matches several places of the other text), and
+    <span class="mp">recurring phrases</span> (formulae found many times in either text, listed once with all their occurrences).
+    Click a highlighted passage, or a row of the table, to see both places side by side.
+    Leave text B empty to find the passages repeated within text A.
+    For two short texts, the simpler <a href="fuzzymatching.html">fuzzy matching</a> page may be enough.</p>
+
+  <section class="texts">
+    <div class="textcolumn">
+      <div class="name">Text A</div>
+      <label>Load a text file: <input type="file" class="fileinput" data-target="textA" accept=".txt,.xml,.tex,text/plain"/></label>
+      <div id="textA" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
+    </div>
+    <div class="textcolumn">
+      <div class="name">Text B <span style="font-weight:normal;font-size:0.95rem">(leave empty to find repetitions within A)</span></div>
+      <label>Load a text file: <input type="file" class="fileinput" data-target="textB" accept=".txt,.xml,.tex,text/plain"/></label>
+      <div id="textB" class="inputbox" autocorrect="off" spellcheck="false" contenteditable></div>
+    </div>
+  </section>
+
+
+  <div class="runrow">
+    <label for="preset">Kind of text</label>
+    <select id="preset">
+      <option value="prose">Prose or commentary (passages of any length)</option>
+      <option value="verse">Verses (compare line by line)</option>
+      <option value="sutra">Sūtras (compare rule by rule)</option>
+    </select>
+    <button id="run">Find parallels</button><span id="status"></span>
+  </div>
+  <details id="settingsbox">
+    <summary>Settings (the kind of text sets them; change any of them here)</summary>
+  <fieldset class="settings">
+    <div>
+      <h3>What to compare</h3>
+      <div class="row"><label>Compare</label>
+        <label><input type="radio" name="mode" value="passages" checked/> running text</label>
+        <label><input type="radio" name="mode" value="units"/> unit by unit</label></div>
+      <div class="only-units">
+        <div class="row"><label for="unitpreset">A unit begins</label>
+          <select id="unitpreset">
+            <option value="^">at every line</option>
+            <option value="(?&lt;=\|\|)|(?&lt;=//)|(?&lt;=॥)">after a double daṇḍa (|| // ॥)</option>
+            <option value="(?&lt;=\||/|।|॥)">after a daṇḍa (| / । ॥)</option>
+            <option value="^(?=\s*\d+(?:\.\d+)+)">at a line starting with a number (1.4.14)</option>
+            <option value="custom">where my pattern says</option>
+          </select></div>
+        <div class="row"><label for="unitpattern">Pattern</label><input type="text" id="unitpattern" value="^"/></div>
+        <p class="hint">A regular expression matching where a unit starts.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3>Matching</h3>
+      <details open>
+        <summary>Tokenize by</summary>
+        <div><input type="radio" name="tokenization" value="whitespace" id="t-ws"/><label for="t-ws">Whitespace (words)</label></div>
+        <div><input type="radio" name="tokenization" value="aksara" id="t-ak"/><label for="t-ak">Syllables/Akṣaras</label></div>
+        <div><input type="radio" name="tokenization" value="eluttu" id="t-el" checked/><label for="t-el">Eḻuttu (without conjuncts)</label></div>
+        <div><input type="radio" name="tokenization" value="char" id="t-ch"/><label for="t-ch">Consonants and vowels separate</label></div>
+      </details>
+      <div class="row"><label for="ngramsize">Ngram size</label><input type="number" id="ngramsize" min="1" value="6"/></div>
+      <p class="hint">What can be found at all: the number of tokens in a row (syllables, or words when tokenizing by whitespace) that must agree exactly. A variant reading breaks such a run, so with many variants or OCR errors use a smaller size (4–5). Nearby agreeing runs are then joined into longer passages, across variants (see “Allowed gap”). Larger: fewer chance matches, but short or varied parallels are missed.</p>
+      <div class="row"><label for="maxfreq">Recurring if found more than</label><input type="number" id="maxfreq" min="1" value="4"/><span>times</span></div>
+      <p class="hint only-passages">An ngram found more often than this in either text is treated as a formula (athāto … vyākhyāsyāmaḥ, iti ha smāha …): it is listed under “Recurring phrases” instead of being paired place by place. Raise it to pair more of the repeated material; lower it to set more aside as formulae.</p>
+      <p class="hint only-units">An ngram found in more units than this still counts for the similarity, but is not used to decide which units to compare. Raise it if short units with common words find no partner.</p>
+      <div class="only-passages">
+        <div class="row"><label for="maxgap">Allowed gap</label><input type="number" id="maxgap" min="0" value="12"/><span>tokens</span></div>
+        <p class="hint">How many tokens without a shared ngram (a variant reading, an added word or pāda) a passage may run through and still continue as one passage. Larger: long parallels with many variants stay together, but unrelated matches nearby may be joined to them.</p>
+        <div class="row"><label for="minlength">Shortest passage</label><input type="number" id="minlength" min="1" value="12"/><span>tokens</span></div>
+        <p class="hint">What is listed: after joining, passages shorter than this are left out. It does not change what is found, only what is shown; raise it to hide short, trivial matches (with syllables, 12 is about a pāda). A value below the ngram size has no effect.</p>
+      </div>
+      <div class="row"><label for="minscore">Lowest similarity</label><input type="number" id="minscore" min="0" max="100" value="25"/><span>%</span></div>
+      <p class="hint only-passages">How much of a passage must be covered by shared ngrams. Low values keep loose parallels with many variants, but also chance matches joined across a gap; 100% means the passages agree throughout.</p>
+      <p class="hint only-units">How alike two units must be to count as a pair: the share of ngrams they have in common (100% = the same ngrams). Lower it for parallels with more variants, raise it to keep only close ones.</p>
+    </div>
+
+    <div>
+      <h3>References and markup</h3>
+      <div class="row"><label for="refpreset">References look like</label>
+        <select id="refpreset">
+          <option value="auto">automatic, for each text</option>
+          <option value="both">1.1.3ab or \susruta{1.1.1} at a line start</option>
+          <option value="numbers">1.1.3ab at a line start</option>
+          <option value="tex">\susruta{1.1.1} at a line start</option>
+          <option value="verseend">verse numbers after the verse (.12. or ||12||)</option>
+          <option value="pages">page breaks END_OF_PAGE_010 (OCR)</option>
+          <option value="none">none (line numbers only)</option>
+          <option value="custom">my pattern</option>
+        </select></div>
+      <div class="row"><label for="refpattern">Pattern</label><input type="text" id="refpattern"/></div>
+      <p class="hint">A regular expression; each match labels the text after it, until the next one.</p>
+      <div class="row"><label><input type="checkbox" id="ignoremarkup" checked/> Do not match markup</label></div>
+      <div class="row"><label for="ignorepattern">Markup</label><input type="text" id="ignorepattern"/></div>
+      <p class="hint">By default: lines starting with %, commands like \susruta{…} or \esusruta, numbers like 1.1.3ab at a line start, and OCR page breaks.</p>
+    </div>
+
+    <div>
+      <h3>Normalization</h3>
+      <details id="normalization">
+        <summary>Options (Sanskrit is on)</summary>
+        <div class="horizontal">
+          <input type="checkbox" name="language" id="check_tamil" autocomplete="off"/><label for="check_tamil">Tamil</label>
+          <details class="tamil"><summary></summary></details>
+        </div>
+        <div class="horizontal">
+          <input type="checkbox" name="language" id="check_sanskrit" autocomplete="off"/><label for="check_sanskrit">Sanskrit</label>
+          <details class="sanskrit"><summary></summary></details>
+        </div>
+        <div class="horizontal">
+          <input type="checkbox" name="language" id="check_pali" autocomplete="off"/><label for="check_pali">Pali</label>
+          <details class="pali"><summary></summary></details>
+        </div>
+        <div class="horizontal">
+          <input type="checkbox" name="language" id="check_geez" autocomplete="off"/><label for="check_geez">Ge'ez</label>
+          <details class="geez"><summary></summary></details>
+        </div>
+      </details>
+    </div>
+  </fieldset>
+  </details>
+
+  <section id="results" hidden>
+    <div class="tabs" id="tabs"></div>
+    <p class="note" id="tabnote"></p>
+    <div class="tablewrap"><table class="results" id="table"></table></div>
+    <p><button id="download">Download all results (CSV)</button>
+      <span class="note">Opens in Google Sheets, Excel or LibreOffice. One row per match, with a column for its kind.</span></p>
+  </section>
+</article>
+<script type="module" src="parallels.mjs"></script>
+</body>
+</html>
